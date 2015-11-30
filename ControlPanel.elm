@@ -40,7 +40,6 @@ type alias Model =
 type Action
     = NoOp
     | ChangePage Page
-    | CreatePageModel Page String
     | NodePageAction NodePage.Action
     | ScriptPageAction ScriptPage.Action
     | SchedulePageAction SchedulePage.Action
@@ -52,24 +51,7 @@ update action model =
     case action of
         NoOp -> model
 
-        ChangePage p ->
-            { model |
-                activePage = p
-            }
-
-        CreatePageModel p data -> case p of
-            Nodes ->
-                { model | nodeModel = NodePage.constructModel data }
-
-            Scripts ->
-                { model | scriptModel = ScriptPage.constructModel data }
-
-            Schedule ->
-                { model | scheduleModel = SchedulePage.constructModel data }
-
-            Logs ->
-                { model | logModel = LogPage.constructModel data }
-
+        ChangePage p -> { model | activePage = p }
 
         NodePageAction a ->
             { model |
@@ -191,25 +173,58 @@ actionsMailbox : Signal.Mailbox Action
 actionsMailbox = Signal.mailbox (ChangePage Nodes)
 
 
+requestsMailbox : Signal.Mailbox (Task.Task String ())
+requestsMailbox = Signal.mailbox (Task.fail "nothing")
+
+
 port requests : Signal (Task.Task String ())
-port requests =
-    let filt act =
-            case act of
-                ChangePage p -> Just p
+port requests = Signal.filterMap actionToTaskFilter (Task.fail "init") actionsMailbox.signal
+
+
+actionToTaskFilter : Action -> Maybe (Task.Task String ())
+actionToTaskFilter action =
+    case action of
+        ChangePage p ->
+            Just (getInitTask p)
+
+        NodePageAction pAct ->
+            case pAct of
+                NodePage.ReqData t -> Just t
                 _ -> Nothing
-    in
-        Signal.filterMap filt Nodes actionsMailbox.signal
-            |> Signal.map
-                (\ page -> Task.andThen
-                    (getQueryTask page)
-                    (Signal.send actionsMailbox.address)
-                )
+
+        ScriptPageAction pAct ->
+            case pAct of
+                ScriptPage.ReqData t -> Just t
+                _ -> Nothing
+
+        SchedulePageAction pAct ->
+            case pAct of
+                SchedulePage.ReqData t -> Just t
+                _ -> Nothing
+
+        LogPageAction pAct ->
+            case pAct of
+                LogPage.ReqData t -> Just t
+                _ -> Nothing
+
+        _ -> Nothing
 
 
-getQueryTask : Page -> Task.Task String Action
-getQueryTask page =
-    let toUrl = "/json/" ++ pageTitles page ++ ".json"
+getInitTask : Page -> Task.Task String ()
+getInitTask page =
+    let addr = actionsMailbox.address
     in
-        Task.mapError (always "Not Found") (Http.getString toUrl)
-            |> Task.map (CreatePageModel page)
+        case page of
+            Nodes ->
+                NodePage.initTask
+                    ( Signal.forwardTo addr NodePageAction )
+            Scripts ->
+                ScriptPage.initTask
+                    ( Signal.forwardTo addr ScriptPageAction )
+            Schedule ->
+                SchedulePage.initTask
+                    ( Signal.forwardTo addr SchedulePageAction )
+            Logs ->
+                LogPage.initTask
+                    ( Signal.forwardTo addr LogPageAction )
 

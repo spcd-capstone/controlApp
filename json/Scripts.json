@@ -1,0 +1,7 @@
+{
+    "script_list": [
+        { "id": 1, "name": "turnon" },
+        { "id": 2, "name": "setcolor" },
+        { "id": 3, "name": "gettemp" }
+    ]
+}

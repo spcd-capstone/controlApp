@@ -1,1 +1,6 @@
-{ "title": "Nodes" }
+{
+    "node_list":
+        [ { "id": 1, "name": "outlet1", "ip": "192.168.1.161", "type": "toggle", "last_updated": "2015-11-01T18:25:43.0Z" }
+        , { "id": 2, "name": "temp1", "ip": "192.168.1.162", "type": "thermostat", "last_updated": "2015-11-01T18:30:00.0Z" }
+        ]
+}

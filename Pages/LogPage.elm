@@ -2,6 +2,8 @@ module Pages.LogPage where
 
 import Html exposing (..)
 import Signal exposing (Address)
+import Task exposing (Task, andThen)
+import Http
 
 type alias Model =
     { cat : String
@@ -10,17 +12,23 @@ type alias Model =
 
 type Action
     = NoOp
-
+    | ReqData (Task String ())
+    | RespData String
 
 initialModel = Model ""
 
-
-constructModel : String -> Model
-constructModel _ = initialModel
-
+initTask : Address Action -> Task String ()
+initTask address =
+    Task.mapError (always "Not Found") (Http.getString "/json/Logs.json")
+        |> Task.map (RespData)
+        |> flip andThen ( Signal.send address )
 
 update : Action -> Model -> Model
-update a m = m
+update a m =
+    case a of
+        RespData s ->
+            { m | cat = s }
+        _ -> m
 
 
 view : Address Action -> Model -> Html
