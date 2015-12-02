@@ -34,5 +34,5 @@ update a m =
 
 
 view : Address Action -> Model -> Html
-view address model = text model.cat
+view address model = text "Not implemented yet"
 

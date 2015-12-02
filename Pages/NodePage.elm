@@ -58,8 +58,6 @@ keypress, and finally one for sending POST request -}
     | CloseRename
     | RenameNodeSent
 
-    | RespExtraData String
-
 
 update : Action -> Model -> Model
 update a m =
@@ -85,9 +83,6 @@ update a m =
         RenameNodeSent ->
             { m | renaming = Nothing }
 
-        RespExtraData s ->
-            { m | extra = s }
-
 
 ---- VIEW ----
 
@@ -96,9 +91,6 @@ view address model = div [ class "nodes-page" ]
     [ h1 [] [ text "Nodes" ]
     , renderNodeTable address model
     , br [] []
-    , button [ onClick address <| ReqData (getExtraData address) ] [ text "more" ]
-    , br [] []
-    , text model.extra
     ]
 
 
@@ -149,18 +141,13 @@ renderNodeTableRow address renaming node =
 
 initTask : Address Action -> Task String ()
 initTask address =
-    getHttpGetTask address RespNodeList "/json/Nodes.json"
-
-
-getExtraData : Address Action -> Task String ()
-getExtraData address =
-    getHttpGetTask address RespExtraData "/json/Nodes.extra.json"
+    getHttpGetTask address RespNodeList "/api/nodes"
 
 
 renameNode : Address Action -> Int -> String -> Task String ()
 renameNode address id newName =
     let decoder = (JD.succeed RenameNodeSent)
-        url = "/json/nodes/" ++ ( toString id )
+        url = "/json/nodes/id/" ++ ( toString id )
         body = "{ \"name\": \"" ++ newName ++ "\" }"
         sendRenameReq = getHttpPostTask address decoder url body
     in

@@ -1,0 +1,32 @@
+{
+    "entry_list":
+    [
+        {
+            "id": 1,
+            "timestamp": "2015-12-01 21:42:10.12",
+            "thread_id": 7,
+            "script_name": "turnon",
+            "params": ["outlet1", "1"],
+            "entry_type": "launch",
+            "data": ""
+        },
+        {
+            "id": 2,
+            "timestamp": "2015-12-01 21:42:12.12",
+            "thread_id": 7,
+            "script_name": "turnon",
+            "params": ["outlet1", "1"],
+            "entry_type": "sent_set",
+            "data": "on: 1"
+        },
+        {
+            "id": 3,
+            "timestamp": "2015-12-01 21:43:12.52",
+            "thread_id": 2,
+            "script_name": "changecolor",
+            "params": ["light1", "100", "100", "100"],
+            "entry_type": "sent_set",
+            "data": "on: 1"
+        }
+    ]
+}

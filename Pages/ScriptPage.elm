@@ -136,14 +136,14 @@ renderScriptTableRow address nodes scriptLine =
 initTask : Address Action -> Task String ()
 initTask address =
     Task.andThen
-        (getHttpGetTask address RespNodeList "/json/Nodes.json")
-        (always <| getHttpGetTask address RespScriptList "/json/Scripts.json")
+        (getHttpGetTask address RespNodeList "/api/nodes")
+        (always <| getHttpGetTask address RespScriptList "/api/scripts/list")
 
 
 runScript : Address Action -> Int -> String -> String -> Task String ()
 runScript address id node params =
     let decoder = (JD.succeed <| RespScriptExec node)
-        url = "/json/scripts/exec/id/" ++ toString id
+        url = "/api/scripts/exec/id/" ++ toString id
         paramList = node :: (String.split " " params)
             |> List.map JE.string
             |> JE.list
